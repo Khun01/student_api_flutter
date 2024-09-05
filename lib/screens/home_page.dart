@@ -38,12 +38,17 @@ class _HomePageState extends State<HomePage> {
       log('Error: $e');
       setState(() {
         isLoading = false;
-        errorMessage = 'Failed to load students. Please try again later.';
+        errorMessage = 'Failed to load students.\nPlease try again later.';
       });
     }
   }
 
   Future<void> refresh() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+    await Future.delayed(const Duration(seconds: 5));
     await fetchStudents();
   }
 
@@ -81,15 +86,24 @@ class _HomePageState extends State<HomePage> {
                   )
                 : errorMessage != null
                     ? SliverFillRemaining(
-                        child: Center(
-                          child: Text(
-                            errorMessage!,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.nunito(
-                                color: Colors.red,
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold),
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton(
+                                onPressed: () {
+                                  refresh();
+                                },
+                                child: const Text('Refresh')),
+                            const SizedBox(height: 24),
+                            Text(
+                              errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.nunito(
+                                  color: Colors.red,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
                       )
                     : SliverList(

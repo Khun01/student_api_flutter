@@ -128,8 +128,8 @@ class _MyBottomDialogState extends State<MyBottomDialog> {
                   child: Text('Third Year'),
                 ),
                 DropdownMenuItem(
-                  value: 'Forth Year',
-                  child: Text('Forth Year'),
+                  value: 'Fourth Year',
+                  child: Text('Fourth Year'),
                 ),
                 DropdownMenuItem(
                   value: 'Fifth Year',
