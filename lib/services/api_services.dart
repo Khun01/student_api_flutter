@@ -6,23 +6,32 @@ import 'package:student_api/services/global.dart';
 import 'package:http/http.dart' as http;
 
 class ApiServices {
-  static Future<List<Students>> fetchStudents() async {
+  final String apiurl;
+
+  ApiServices({required this.apiurl});
+
+  Future<List<Students>> fetchStudents() async {
     var url = Uri.parse('$baseUrl/index');
     final response = await http.get(
       url,
     );
-    List<dynamic> data = jsonDecode(response.body);
-    List<Students> productList = [];
-
-    for (var item in data) {
-      Students products = Students.fromJson(item);
-      productList.add(products);
+    try {
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+        List<Students> studentList =
+            data.map((item) => Students.fromJson(item)).toList();
+        return studentList;
+      } else {
+        log('Error: Failed to load students. Status code: ${response.statusCode}');
+        throw Exception('Failed to load students');
+      }
+    } catch (e) {
+      log('Error occurred: $e');
+      throw Exception('Failed to load students: $e');
     }
-
-    return productList;
   }
 
-  static Future<void> addStudents(Students student) async {
+  Future<Map<String, dynamic>> addStudents(Students student) async {
     var url = Uri.parse('$baseUrl/store');
     final response = await http.post(url,
         headers: {'Content-Type': 'application/json'},
@@ -33,24 +42,10 @@ class ApiServices {
           'year': student.year,
           'enrolled': student.enrolled,
         }));
-    if (response.statusCode == 200) {
-      log('Student added successfully');
-    } else {
-      log('Error: ${response.statusCode}');
-      try {
-        final responseBody = jsonDecode(response.body);
-        final errorMessage = responseBody['error'] ?? 'Failed to add student';
-        final details = responseBody['details'] ?? '';
-        log('Error Message: $errorMessage');
-        log('Details: $details');
-      } catch (e) {
-        log('Failed to parse error response: $e');
-      }
-      throw Exception('Failed to add student');
-    }
+    return {'statusCode': response.statusCode};
   }
 
-  static Future<void> upadateStudents(int id, Students student) async {
+  Future<Map<String, dynamic>> updateStudents(int id, Students student) async {
     var url = Uri.parse('$baseUrl/update/$id');
     final response = await http.put(url,
         headers: {'Content-Type': 'application/json'},
@@ -61,22 +56,28 @@ class ApiServices {
           'year': student.year,
           'enrolled': student.enrolled,
         }));
-    if (response.statusCode == 200) {
-      log('Student added successfully');
-    } else {
-      log('Error for update: ${response.statusCode}');
-    }
+    return {
+      'statusCode': response.statusCode,
+      'body': response.body,
+      'headers': response.headers,
+    };
   }
 
-  static Future<void> deleteStudents(int id) async{
+  Future<Map<String, dynamic>> deleteStudents(int id) async {
     var url = Uri.parse('$baseUrl/destroy/$id');
     final response = await http.delete(
       url,
     );
-     if (response.statusCode == 200) {
-      log('Student added successfully');
-    } else {
-      log('Error: ${response.statusCode}');
-    }
+    // if (response.statusCode == 200) {
+    //   log('Student added successfully');
+    //   return response.statusCode;
+    // } else {
+    //   log('Error: ${response.statusCode}');
+    // }
+    return {
+      'statusCode': response.statusCode,
+      'body': response.body,
+      'headers': response.headers,
+    };
   }
 }
